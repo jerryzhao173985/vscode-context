@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import fg from 'fast-glob';
 import ignore from 'ignore';
+import { EnhancedExtension } from './enhancedExtension';
 
 type TreeEntry = {
   path: string;
@@ -76,8 +77,20 @@ const MAX_TRACKED_FILES_PER_DIRECTORY = 200;
 const workspaceTrackers = new Map<string, WorkspaceTrackingState>();
 let suppressTracking = false;
 
+let enhancedExtension: EnhancedExtension | undefined;
+
 export function activate(context: vscode.ExtensionContext) {
   extensionContext = context;
+
+  // Initialize enhanced features
+  enhancedExtension = new EnhancedExtension(context);
+  enhancedExtension.initialize().then(() => {
+    console.log('✓ ContextPack-Pro enhanced features activated');
+    enhancedExtension?.registerCommands();
+  }).catch(error => {
+    console.error('Failed to initialize enhanced features:', error);
+    vscode.window.showWarningMessage('Some ContextPack-Pro features may not be available');
+  });
 
   const cmd = vscode.commands.registerCommand('copyContext.copy', async () => {
     try {
@@ -147,7 +160,9 @@ export function activate(context: vscode.ExtensionContext) {
   void showPrivacyNoticeOnce(context);
 }
 
-export function deactivate() {}
+export function deactivate() {
+  enhancedExtension?.dispose();
+}
 
 async function toggleManualTracking(resource: vscode.Uri | undefined): Promise<void> {
   const targetUri = resource ?? vscode.window.activeTextEditor?.document.uri;

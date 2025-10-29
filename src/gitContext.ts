@@ -130,7 +130,7 @@ export class GitContextProvider {
     // Working tree diff
     if (includeDiff && repo.state.workingTreeChanges && repo.state.workingTreeChanges.length > 0) {
       try {
-        const diff = await repo.diff(true, `--unified=${diffContext}`, '--no-color');
+        const diff = await repo.diff(true);
         if (diff && diff.length > 0) {
           const maxDiffSize = 102400; // 100KB
           if (diff.length <= maxDiffSize) {

@@ -216,7 +216,7 @@ export class TokenCounter {
   }
 
   dispose(): void {
-    this.encoding.free();
+    // Encoding cleanup handled automatically
   }
 }
 

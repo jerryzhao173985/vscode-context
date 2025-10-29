@@ -699,11 +699,18 @@ export class EnhancedExtension {
       outputChannel.appendLine('');
     }
 
-    const stats = this.performanceMonitor.getStats();
+    const allStats = this.performanceMonitor.getAllStats();
     outputChannel.appendLine('## Statistics\n');
-    outputChannel.appendLine(`Total Operations: ${stats.totalOperations}`);
-    outputChannel.appendLine(`Average Duration: ${stats.averageDuration.toFixed(2)}ms`);
-    outputChannel.appendLine(`Slowest Operation: ${stats.slowestOperation?.operation || 'N/A'} (${stats.slowestOperation?.duration.toFixed(2) || 0}ms)`);
+    const totalOps = allStats.reduce((sum, s) => sum + s.count, 0);
+    const avgDuration = allStats.length > 0
+      ? allStats.reduce((sum, s) => sum + s.averageDuration, 0) / allStats.length
+      : 0;
+    const slowest = allStats.length > 0
+      ? allStats.reduce((max, s) => s.maxDuration > max.maxDuration ? s : max, allStats[0])
+      : null;
+    outputChannel.appendLine(`Total Operations: ${totalOps}`);
+    outputChannel.appendLine(`Average Duration: ${avgDuration.toFixed(2)}ms`);
+    outputChannel.appendLine(`Slowest Operation: ${slowest?.operation || 'N/A'} (${slowest?.maxDuration.toFixed(2) || 0}ms)`);
 
     outputChannel.show();
   }
@@ -1176,7 +1183,7 @@ export class EnhancedExtension {
     }
 
     const result = await this.contextValidator.validateContext(selectedFiles);
-    const report = this.contextValidator.formatHealthReport(result.healthScore, result.issues);
+    const report = this.contextValidator.formatReport(result);
 
     const doc = await vscode.workspace.openTextDocument({
       content: report,
@@ -1212,7 +1219,7 @@ export class EnhancedExtension {
     );
 
     if (fix === 'Fix All') {
-      const fixed = await this.contextValidator.autoFix(selectedFiles);
+      const fixed = await this.contextValidator.autoFix(selectedFiles, fixableIssues);
       vscode.window.showInformationMessage(`Fixed ${fixed.fixed} issues`);
     }
   }

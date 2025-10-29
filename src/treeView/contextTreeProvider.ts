@@ -459,7 +459,7 @@ export class ContextTreeProvider implements vscode.TreeDataProvider<ContextTreeI
   /**
    * Handle checkbox state changes
    */
-  public async handleCheckboxChange(items: readonly vscode.TreeCheckboxChangeEvent<ContextTreeItem>['items']): Promise<void> {
+  public async handleCheckboxChange(items: ReadonlyArray<readonly [ContextTreeItem, vscode.TreeItemCheckboxState]>): Promise<void> {
     for (const [item, state] of items) {
       const isChecked = state === vscode.TreeItemCheckboxState.Checked;
       item.checked = isChecked;
@@ -644,8 +644,8 @@ export class ContextTreeProvider implements vscode.TreeDataProvider<ContextTreeI
       if (item.itemType === ItemType.Category || item.itemType === ItemType.Summary) {
         // Search in children
         const matchedChildren = item.children.filter(child => {
-          const label = child.label.toLowerCase();
-          const description = child.description?.toLowerCase() || '';
+          const label = typeof child.label === 'string' ? child.label.toLowerCase() : '';
+          const description = typeof child.description === 'string' ? child.description.toLowerCase() : '';
           const fsPath = child.resourceUri?.fsPath.toLowerCase() || '';
 
           return label.includes(query) || description.includes(query) || fsPath.includes(query);

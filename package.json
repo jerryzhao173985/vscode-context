@@ -1,8 +1,8 @@
 {
   "name": "copy-context",
   "displayName": "ContextPack-Pro",
-  "description": "Copy the current project context to your clipboard from VS Code.",
-  "version": "0.0.6",
+  "description": "Intelligent, git-aware context provider for AI assistants with token counting and cost optimization",
+  "version": "1.0.0",
   "publisher": "Ben-cpy",
   "author": "Ben",
   "license": "MIT",
@@ -21,7 +21,13 @@
     "project",
     "snapshot",
     "copy",
-    "markdown"
+    "markdown",
+    "git",
+    "token-counting",
+    "cost-optimization",
+    "copilot",
+    "chatgpt",
+    "claude"
   ],
   "engines": {
     "vscode": "^1.85.0"
@@ -30,23 +36,145 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:copyContext.copy",
-    "onCommand:copyContext.toggleTracking",
     "onStartupFinished"
+  ],
+  "extensionDependencies": [
+    "vscode.git"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "copyContext.copy",
-        "title": "Copy Project Context"
+        "title": "Copy Project Context",
+        "icon": "$(files)"
+      },
+      {
+        "command": "copyContext.copyDebug",
+        "title": "Copy Debug Context",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "copyContext.copyReview",
+        "title": "Copy Code Review Context",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "copyContext.copyFeature",
+        "title": "Copy Feature Context",
+        "icon": "$(sparkle)"
       },
       {
         "command": "copyContext.toggleTracking",
         "title": "ContextPack-Pro: Add/Remove Tracking"
+      },
+      {
+        "command": "copyContext.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "copyContext.clearAll",
+        "title": "Clear Selection",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "copyContext.showTokenCount",
+        "title": "Show Token Count & Cost",
+        "icon": "$(calculator)"
+      },
+      {
+        "command": "copyContext.optimizeContext",
+        "title": "Optimize Context Size",
+        "icon": "$(zap)"
+      },
+      {
+        "command": "copyContext.selectByPattern",
+        "title": "Select Files by Pattern",
+        "icon": "$(search)"
+      },
+      {
+        "command": "copyContext.selectTestFiles",
+        "title": "Select Test Files",
+        "icon": "$(beaker)"
+      },
+      {
+        "command": "copyContext.selectConfigFiles",
+        "title": "Select Config Files",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "copyContext.selectRecentFiles",
+        "title": "Select Recently Modified Files",
+        "icon": "$(history)"
+      },
+      {
+        "command": "copyContext.renderWithTemplate",
+        "title": "Copy with Template",
+        "icon": "$(symbol-file)"
+      },
+      {
+        "command": "copyContext.copyForPR",
+        "title": "Copy for PR Description",
+        "icon": "$(git-pull-request)"
+      },
+      {
+        "command": "copyContext.copyForBugReport",
+        "title": "Copy for Bug Report",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "copyContext.copyForDocs",
+        "title": "Copy for Documentation",
+        "icon": "$(book)"
+      },
+      {
+        "command": "copyContext.showFileMetadata",
+        "title": "Show File Metadata",
+        "icon": "$(info)"
+      }
+    ],
+    "views": {
+      "explorer": [
+        {
+          "id": "contextPackExplorer",
+          "name": "ContextPack-Pro",
+          "icon": "resources/icon.svg",
+          "contextualTitle": "Context Selection"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "contextPackExplorer",
+        "contents": "No workspace folder open.\n[Open Folder](command:vscode.openFolder)"
       }
     ],
     "menus": {
+      "view/title": [
+        {
+          "command": "copyContext.refresh",
+          "when": "view == contextPackExplorer",
+          "group": "navigation@1"
+        },
+        {
+          "command": "copyContext.clearAll",
+          "when": "view == contextPackExplorer",
+          "group": "navigation@2"
+        },
+        {
+          "command": "copyContext.showTokenCount",
+          "when": "view == contextPackExplorer",
+          "group": "navigation@3"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "copyContext.toggleTracking",
+          "when": "view == contextPackExplorer",
+          "group": "inline"
+        }
+      ],
       "explorer/context": [
         {
           "command": "copyContext.toggleTracking",
@@ -54,15 +182,60 @@
         }
       ]
     },
+    "keybindings": [
+      {
+        "command": "copyContext.copy",
+        "key": "cmd+shift+c",
+        "mac": "cmd+shift+c",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "copyContext.selectByPattern",
+        "key": "cmd+shift+f",
+        "mac": "cmd+shift+f",
+        "when": "view == contextPackExplorer"
+      },
+      {
+        "command": "copyContext.selectTestFiles",
+        "key": "cmd+shift+t",
+        "mac": "cmd+shift+t",
+        "when": "view == contextPackExplorer"
+      },
+      {
+        "command": "copyContext.renderWithTemplate",
+        "key": "cmd+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "view == contextPackExplorer"
+      },
+      {
+        "command": "copyContext.copyForPR",
+        "key": "cmd+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "view == contextPackExplorer"
+      },
+      {
+        "command": "copyContext.showFileMetadata",
+        "key": "cmd+shift+i",
+        "mac": "cmd+shift+i",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "copyContext.refresh",
+        "key": "cmd+r",
+        "mac": "cmd+r",
+        "when": "view == contextPackExplorer"
+      }
+    ],
     "configuration": {
-      "title": "Copy Context",
+      "title": "ContextPack-Pro",
       "properties": {
         "copyContext.sources": {
           "type": "string",
           "enum": [
             "openEditors",
             "activeOnly",
-            "smart"
+            "smart",
+            "gitChanges"
           ],
           "default": "smart",
           "description": "Choose which documents are included when collecting context."
@@ -103,16 +276,171 @@
           ],
           "default": "smart",
           "description": "Choose between the full tree view or a smart view that expands only the most relevant files."
+        },
+        "copyContext.includeGitInfo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include git repository information (branch, commits, changes) in context."
+        },
+        "copyContext.includeDiff": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include git diffs for modified files in context."
+        },
+        "copyContext.commitHistoryLimit": {
+          "type": "number",
+          "default": 5,
+          "description": "Number of recent commits to include in context."
+        },
+        "copyContext.diffContext": {
+          "type": "number",
+          "default": 3,
+          "description": "Number of context lines around changes in git diffs."
+        },
+        "copyContext.includeDependencies": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include project dependencies and tech stack information."
+        },
+        "copyContext.includeDocFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically include documentation files (README, ARCHITECTURE, etc.)."
+        },
+        "copyContext.docFilePatterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "README.md",
+            "**/ARCHITECTURE.md",
+            "**/CONTRIBUTING.md"
+          ],
+          "description": "Glob patterns for documentation files to auto-include."
+        },
+        "copyContext.includeDiagnostics": {
+          "type": "boolean",
+          "default": true,
+          "description": "Include active errors and warnings from language servers."
+        },
+        "copyContext.diagnosticSeverity": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "error",
+              "warning",
+              "info"
+            ]
+          },
+          "default": [
+            "error",
+            "warning"
+          ],
+          "description": "Which diagnostic severity levels to include."
+        },
+        "copyContext.showTokenCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show token count in real-time as files are selected."
+        },
+        "copyContext.showCost": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show estimated cost for different AI models."
+        },
+        "copyContext.costModels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "gpt-4o",
+            "claude-3.5-sonnet"
+          ],
+          "description": "AI models to show cost estimates for."
+        },
+        "copyContext.warnThreshold": {
+          "type": "number",
+          "default": 10000,
+          "description": "Warn when context exceeds this many tokens."
+        },
+        "copyContext.autoIncludeRelated": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically suggest related files (imports, tests, types)."
+        },
+        "copyContext.relationshipTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "imports",
+              "tests",
+              "types",
+              "used-by"
+            ]
+          },
+          "default": [
+            "imports",
+            "tests",
+            "types"
+          ],
+          "description": "Types of file relationships to detect."
+        },
+        "copyContext.maxRelatedFiles": {
+          "type": "number",
+          "default": 5,
+          "description": "Maximum number of related files to suggest."
+        },
+        "copyContext.confidenceThreshold": {
+          "type": "number",
+          "default": 0.6,
+          "description": "Minimum confidence score (0-1) for file relationship suggestions."
+        },
+        "copyContext.optimizationMode": {
+          "type": "string",
+          "enum": [
+            "auto",
+            "full",
+            "signatures",
+            "diffs"
+          ],
+          "default": "auto",
+          "description": "Token optimization mode: full code, signatures only, or diffs only."
+        },
+        "copyContext.optimizationThreshold": {
+          "type": "number",
+          "default": 10000,
+          "description": "Automatically optimize when context exceeds this many tokens."
+        },
+        "copyContext.defaultMode": {
+          "type": "string",
+          "enum": [
+            "git-changes",
+            "current-task",
+            "error-focus",
+            "full-project"
+          ],
+          "default": "git-changes",
+          "description": "Default context mode when opening TreeView."
+        },
+        "copyContext.enablePerformanceMonitoring": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable performance monitoring and logging."
         }
       }
     }
   },
   "scripts": {
-    "compile": "esbuild src/extension.ts --bundle --platform=node --external:vscode --outfile=out/extension.js",
+    "compile": "esbuild src/extension.ts --bundle --platform=node --external:vscode --outfile=out/extension.js --sourcemap",
     "watch": "npm run compile -- --watch",
     "build": "npm run compile",
     "lint": "tsc --noEmit",
-    "test": "echo \"(可选)添加集成测试\""
+    "test": "echo \"(可选)添加集成测试\"",
+    "package": "vsce package"
   },
   "devDependencies": {
     "@types/node": "^20.12.7",
@@ -122,6 +450,9 @@
   },
   "dependencies": {
     "fast-glob": "^3.3.3",
-    "ignore": "^7.0.5"
+    "ignore": "^7.0.5",
+    "js-tiktoken": "^1.0.10",
+    "@npmcli/package-json": "^5.0.0",
+    "minimatch": "^9.0.3"
   }
 }

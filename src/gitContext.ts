@@ -128,6 +128,8 @@ export class GitContextProvider {
     }
 
     // Working tree diff
+    // Note: VS Code Git API diff() only accepts cached boolean parameter
+    // Custom diff context lines (diffContext config) cannot be applied via this API
     if (includeDiff && repo.state.workingTreeChanges && repo.state.workingTreeChanges.length > 0) {
       try {
         const diff = await repo.diff(true);
